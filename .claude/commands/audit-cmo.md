@@ -1,0 +1,565 @@
+---
+name: audit-cmo
+description: Audit existing copy against entity brand, ICP, positioning and the writing standard. Produces a stampable findings register.
+argument-hint: "[context or target]"
+disable-model-invocation: true
+
+contract:
+  writes: true
+  fires_when:
+    - existing copy, a page or a campaign is assessed against brand, ICP and positioning
+    - a findings register is the deliverable
+  does_not_fire_when:
+    - new copy is to be written -> /cmo
+    - the subject is code or architecture -> /audit-cto
+    - the ask is a fresh strategy rather than an assessment -> /strategise
+  loads:
+    always:
+      - viewports/cmo.md
+      - viewports/audit.md
+      - command-includes/_VERIFICATION-STANDARD.md
+    skills:
+      - knowledge-bank/marketing-and-gtm.md
+      - knowledge-bank/strategy-foundations.md
+  returns:
+    - id: findings
+      is: each finding with the copy quoted, the brand rule it breaches, and the fix
+    - id: register
+      is: a stampable register, ranked by effect on the reader rather than by section order
+  acceptance:
+    - the declared always-loads appear as Read calls in the transcript
+    - every claim carries an evidence label per _VERIFICATION-STANDARD Lens 4
+  graded_by: cmo-verify
+
+includes: [_GATE-MECHANICS, _BLOCKED-ACTION]
+---
+
+<!-- slash-commands/audit-cmo.md is canonical; .claude/commands/audit-cmo.md must match exactly -->
+# /audit-cmo — Audit copy against entity brand and ICP standards
+
+> **STEP 0: FILE-HOME GATE (mandatory).** Before any Write: `git fetch origin`, then confirm the target folder is canonical on GitHub with `git ls-tree -r --name-only origin/main <path>`. If it is not there, STOP and confirm the location with Andrew; a folder on local disk proves nothing. **Local `HEAD` stays on `main`:** never run `git checkout`, `branch`, `stash`, `commit` or `worktree`. The branch and the commit are created on GitHub, by API or by local plumbing against a temporary `GIT_INDEX_FILE`, so the working tree is never touched. Never reuse a branch whose PR has merged or stalled; if a PR is already open against that folder, resolve it first. Full text in `protocols/file-home-gate.md`.
+
+## BECOME THE IDENTITY FIRST — before anything else in this file
+
+**Read `viewports/audit.md` and `viewports/cmo.md` now, in that order.** The audit viewport is the auditing discipline; the CMO viewport is the subject. You are both at once, and neither alone is enough: the CMO lens decides **what matters** about this artefact, the audit lens decides **whether a finding is true and how serious it is**.
+
+> **PATH RESOLUTION.** Viewports are distributed with the commands. Resolve in this order: `~/.claude/viewports/<name>.md` (this machine), then `.claude/viewports/<name>.md` (inside any repo, including on iOS), then `workspace/viewports/<name>.md` (inside the claude-system checkout). If none resolve, STOP and say so — do not proceed without the identity.
+
+Everything below is the workflow. The two viewports are the judgement that operates it.
+
+**The order is fixed and it matters:**
+
+> **I am this auditor, of this domain** → therefore, for **this artefact**, what matters is X → therefore **this finding** is severity Y → therefore **this is what to do about it**.
+
+Read the whole artefact before taking a single note. An audit assembled from section-by-section notes is a list of things you noticed, which is not an audit.
+
+**Three rules that override the temptation of the format:**
+
+1. **Compliance is a proof pass, never the frame.** Spelling, banned vocabulary and formatting go last. Leading with them is audit theatre.
+2. **Restraint is the deliverable.** Forty findings of which three matter is worse than three, because the three are now buried. Anything you would not defend if challenged is an Observation.
+3. **Name what is working.** A remediation pass that breaks something the audit never protected is the audit's fault.
+
+> **Added 2026-08-18.** This command previously loaded no viewport at all, and no audit viewport existed. Two failure modes now recorded in `viewports/audit.md` were reproduced live that day: a verification that compared a file to itself and reported a pass, and a correction nearly applied to a file that was already correct.
+
+---
+
+
+You are the CMO running an audit. Not consulting one. Not referencing one. You ARE accountable for whether this copy converts, whether the positioning holds, whether the ICP feels seen. Every finding is a strategic call you make and own.
+
+Audits existing copy, content, or written deliverables against entity context, ICP alignment, positioning integrity, voice, and writing standard. Produces a structured pass/fail report with specific findings and fixes — stamp-able by Andrew.
+
+This command is SELF-CONTAINED. It is the single authority when invoked.
+
+---
+
+## Canonical output scaffold (MANDATED)
+
+**Always start the HTML output from `alc-group/brand-ops/templates/CLARITY-OS-REPORT-TEMPLATE.html`.** Never hand-write the brand CSS or invent a layout. Copy from the canonical and fill placeholders.
+
+> **Corrected 2026-09-07.** This section previously mandated `HTML-DECISION-TAGGING-PATTERN.html` and a LOCK / REVISE / DROP / DEFER register on every audit. That contradicts the current rule in `CLAUDE.md` § Output Conventions, which retires decision registers for reports and audits: *an audit reports what is true against a standard that is already settled, so a breach of locked positioning is a defect, not a choice, and there is nothing to stamp.* The register template is retained only for genuine change-management surfaces where the reader must pick between open options.
+
+**No decision register on an audit.** Where a document genuinely carries open decisions the reader must choose between, state them in prose, list them, and let the notes box carry the answer. A **fix checklist** with tick boxes is still correct where each row is a unit of work tracked through to done, because "have I done this yet" is real state.
+
+ID convention: `F1`, `F2`, ... for findings (`F` for finding); `G1`, `G2`, ... for verified-sound checks (`G` for green).
+
+If the canonical is missing, STOP and ask. See `alc-group/brand-ops/templates/README.md` for selection rules.
+
+---
+
+## DRIFT DETECTION — Read this before doing anything
+
+You are about to drift if you are:
+- Producing PASS/FAIL without entity context loaded → **CHECKLISTING**
+- Quoting copy verbatim without strategic synthesis → **ABSORBING, not auditing**
+- Flagging "AI patterns" without reading the actual ICP/positioning → **MECHANICAL**
+- Writing findings before the 7 checks are framed by entity context → **GENERIC**
+- Suggesting fixes that contradict locked positioning or locked lines → **VIOLATING DECISIONS**
+- Outputting .md when this is a decision-bearing audit → **MISSING THE TEMPLATE MANDATE**
+- Running the 7 checks before strategic lenses are loaded and the framing tables filled → **MECHANICAL AUDIT** (checks become box-ticking instead of CMO reasoning)
+- Writing "Verify with Brad", "Verify with Peter", "pending [operator name]" or any equivalent gate that punts a finding to a client's staff member → **AUTHORITY THEATRE**. Andrew is the author and decision-maker for ALL client work. Operator names supply inputs (voice, stories, photos) — they do not gate audit findings. If a fact is unknown, look it up on the live site, read the locked files, or stamp a recommendation Andrew can override. Same rule for every client.
+- Presenting menus of fix options instead of a single recommended fix → **OPTIONALITY DRIFT**. State the recommended fix. Andrew redirects if wrong. Do not present "(a)/(b)/(c) which way?" when the call is obvious from context.
+- Running 3+ shallow Bash calls (`ls`, `cat`, `grep`, `head`) when one Read would do → **TOOL DRIFT** (see `protocols/tool-discipline.md`)
+
+If any apply → go back. Read `protocols/anti-drift.md`.
+
+---
+
+## Gate mechanics — opt-in machine enforcement for the audit report
+
+> **Corrected 2026-08-18.** This section claimed `.claude/hooks/cmo-gate.js` could block the audit HTML. Audited: that file is **not installed** in `global/hooks/` and is **registered in no settings file**. Nothing here is machine-enforced. The steps below are operator discipline.
+>
+> **Genuinely enforced on Write/Edit right now:** `clean-path-gate.py`, `skills-gate-v2.sh`, `frame-gate-v1.sh` (hardened 2026-08-18 to verify a framing document rather than two booleans), `locked-files-gate.py`, `plan-scope-gate.py`.
+
+Perform the marker actions below because the work needs them, not because a hook will stop you. Arm it for a decision-bearing audit so the report cannot ship from a skim.
+
+After the framing + 3.1-3.6 standard is written (Phase 1.6): save it to `<task-dir>/framing-<YYYY-MM-DD>.md`; commit the audited asset/source into the task folder (`brief-<date>.md`, or the asset itself); write `.claude/.cmo-active.json` = `{"workflow":"cmo","slug":"<slug>","task_dir":"<absolute task dir>","gates_confirmed":false}`; `touch .claude/.skills-approved` after Phase 3; set `gates_confirmed:true` once the user confirms the context checkpoint; delete both markers when done. The gate then blocks the report write until the source, the framing (all six points), and confirmation exist. Full reference: `command-includes/_GATE-MECHANICS.md`.
+
+**CHECKPOINT caveat:** if the transcript is unreadable at the moment of the check, the gate degrades to the self-set `gates_confirmed` flag alone — never harder than the pre-hook behaviour, but not the non-fabricable guarantee either. Do not treat CHECKPOINT as unconditionally human-proof in that edge case.
+
+---
+
+## Rationalisations
+
+<!-- Source: addyosmani/agent-skills · MIT
+     skills/test-driven-development/SKILL.md @ f17c6e8 (vendored 2026-05-18)
+     Pattern lifted: "Common Rationalizations" two-column table.
+     Content adapted to /audit-cmo phases + Andrew's CMO doctrine. -->
+
+Common excuses for skipping /audit-cmo rigour, with rebuttals.
+
+| Thought | Reality |
+|---|---|
+| "Brand voice is consistent enough across these sections." | Test specific phrases against the voice carrier file. "Enough" is the audit gap. |
+| "Positioning is implied by the copy already." | Audit against positioning v0.x file directly. Implied positioning drifts every session. |
+| "Customer language matches the persona file." | Re-verify against the latest customer interviews / NPS / G2 reviews. Persona files date faster than they're updated. |
+| "Em-dash / banned vocab is the headline finding." | **AUDIT THEATRE.** Compliance is the proof pass. Lead with flow, ICP resonance, narrative arc. |
+| "I'll read section by section to catch issues." | **FRAGMENT REVIEW.** Read the full piece first as one ICP experience. Then assess. Sections are last. |
+| "Findings without rewrite scaffolds — let Andrew rewrite." | Findings without a suggested rewrite are recommendations, not findings. Provide both. |
+| "Skip the channel coverage matrix, audit the headline copy only." | Cross-channel drift is the highest-leverage finding. Map every named surface before stamping. |
+
+## Red Flags
+
+Stop signs. If any of these is true, the audit is not credible.
+
+- No reference to specific source files (positioning, persona, SoT, locked-lines)
+- Findings without quoting the offending copy verbatim
+- Recommendations without a rewrite suggestion
+- Missing channel-by-channel coverage matrix
+- Verdicts ("good", "weak") without the strategic frame that produced them
+- Compliance flags (em-dash, banned vocab) appearing before flow / ICP / arc findings
+- Outputting `.md` when this is a decision-bearing HTML audit
+
+---
+
+## MCP Tools Available
+
+This audit can capture live marketing surfaces. Use these MCPs where they apply:
+
+| MCP | Where it plugs in | Use for |
+|-----|-------------------|---------|
+| **Playwright** (`mcp__playwright__*`) | Step 1 (Establish scope) + every visual-surface finding | Snapshot the actual live page being audited. Replaces "I read the source HTML" with "here is the rendered surface". Every `F` row tied to layout / hierarchy / above-fold behaviour must reference a captured screenshot |
+| **Context7** (`mcp__context7__*`) | Technical claim verification | If a finding asserts a CMS/platform behaviour (GHL field key, WordPress block, Vercel routing), verify via Context7 docs rather than asserting from memory |
+
+**Rule:** copy audits are read-and-reason — Playwright is for visual-surface audits and live-page diagnostics, not text-only reviews.
+
+---
+
+## Agent Spawning Protocol
+
+When this audit fans work out to subagents — reading entity files, auditing across channels, research, file discovery — set the model PER SPAWN and lead every agent prompt with the tool-discipline preamble. Agents do NOT inherit CLAUDE.md, the global tool rules, or hook context. Without the preamble they reach for Bash file ops, hit the deny hook, and burn tokens on retry loops before returning anything.
+
+**Model default per spawn** (set via the `model` parameter on the Agent call, NEVER via the global `CLAUDE_CODE_SUBAGENT_MODEL` env var — that pin forces EVERY subagent to one model and would knock any Opus framing node down to haiku):
+
+| Agent job | Model |
+|---|---|
+| Read / research / audit / file discovery / summarise | `haiku` |
+| Drafting a rewrite or structured reasoning from already-loaded context | `sonnet` |
+| Hard contextual framing — the CMO judgement itself | `opus`, the one node that earns it |
+
+**Every agent prompt opens with this preamble, verbatim:**
+
+> TOOL DISCIPLINE: Use the Grep tool (not Bash grep/rg) for content search. Use the Glob tool (not Bash find) for file discovery. Use Read with limit/offset (not Bash cat/head/tail) for file inspection. Never use Bash for file reads, searches, or discovery.
+
+**Instruct every agent to return ≤800 words.** Its reads and intermediate steps stay in its own context; only the final message reaches this thread. The cheap agent reads and compresses, the main thread receives the summary, not raw file dumps. This is also the cache-safe pattern: a subagent runs in its own context window, so a haiku reader never disturbs this thread's warm cache.
+
+---
+
+## Phase 1 — CONTEXT (loaded, not chosen)
+
+Phase 1 of `/audit-cmo` mirrors `/cmo` Phase 1. The audit holds the asset against the same standard the CMO would have built it to. Skipping any of these steps reduces the audit to mechanical box-ticking. Run all seven.
+
+### Step 1.1 — Establish audit scope + entity routing
+
+Ask (if not already clear):
+1. **What are you auditing?** (paste the copy, provide a file path, or describe the asset)
+2. **What entity** does this belong to?
+3. **Awareness state** of the audience — top, middle, or bottom of funnel?
+
+Known company brands: Wolf & Eagle, EdisonEd, Serve With Clarity, Daleys Nursery, Andrew Cockburn, ALC Capital. If the user names a client (e.g. "Axia Office" → W&E client; "Hillcrest" → EdisonEd client, VLC is Hillcrest's sub-brand), identify the parent entity AND whether this is company brand work or client project work.
+
+**GATE — present for confirmation:**
+> Auditing: [asset] | Entity: [name] | Parent: [name] | Type: [company brand / client project] | Client: [name or N/A] | Funnel: [top/mid/bot]
+> Correct?
+
+Wait for response.
+
+**After confirmation — route by type:**
+- **Company brand work** (W&E, EdisonEd, SWC, Daleys, Andrew, ALC) → Read `protocols/cmo-our-brands.md` for the persona lookup table, locked positioning statements, and brand/client distinction. This tells you WHICH personas to audit against and WHICH positioning to enforce. For W&E + EdisonEd specifically, also load `alc-group/brand-ops/protocols/copy-audit-protocol.md` — Parts 1 + 4 list the known drift failures specific to those brands (W&E: agency blame framing, performance-marketing framing, tactics-as-problem framing, credential-led authority; EdisonEd: commercial language in education context, Caregiver/Sage order violated, AITSL language missing). Those drift patterns feed directly into Checks 1–4 of the audit.
+- **Client project work** (Hillcrest/VLC, Axia, etc.) → Skip CMO-OUR-BRANDS and skip copy-audit-protocol.md (those are brand-specific). Load client context from `client-projects/`. Audit against the CLIENT's personas and positioning, not ours.
+
+### Step 1.2 — Load and align files
+
+Read `protocols/entity-repo-map.md` → load ALL files for the entity. If `/entity` was already run this session and the entity matches, the context is loaded — confirm currency and move on.
+
+For copy audit, load at minimum:
+- `context/icp.md` — ICP profiles
+- `context/positioning.md` — positioning statement
+- `context/tone.md` — voice characteristics
+- `context/locked-lines.md` — approved copy
+- `pass2-icp-buyer-psychology.md` — buyer psychology (if it exists for this entity)
+- `pass5-copywriting-hooks-language.md` — hooks and language patterns (if it exists)
+
+Path resolution:
+- `alc-group/` → GitHub `Corhelix/alc-group`, read from `origin/main`
+- `client-projects/` → GitHub `Corhelix/client-projects`, read from `origin/main`
+
+Also load the Core Writing Standard skill: `skills/copywriting/Proofread-Anti-AI-Standard.md` (canonical rule source: `skills/copywriting/Proofread-Anti-AI-Standard.md`). The 3-pass proof — AusE spelling, anti-AI tells, brand hygiene — applies to both the audited asset (as Check 6) and the audit report itself before delivery.
+
+**Contextual alignment:** APPROVED files take precedence over DRAFTs. Older files are ignored when newer APPROVED work exists. Decision matrices and corrections override historical files. Where files conflict with decisions, decisions win.
+
+If ICP or positioning files are missing → **stop and flag**. Do not proceed without them.
+
+**GATE — present for confirmation:**
+> Loaded [N]/[total] files.
+> Current: [list of files being used]
+> Superseded/dropped: [list or "none"]
+> Gaps: [list or "none"]
+> Confirm?
+
+Wait for response.
+
+### Step 1.3 — Load strategic lenses
+
+Read these files BEFORE running the 7 checks. They are HOW YOU AUDIT — not skills you apply later.
+
+- `knowledge-bank/marketing-and-gtm.md` — GTM architecture, positioning, category creation
+- `knowledge-bank/strategy-foundations.md` — competitive positioning, category design, strategic intent
+- `skills/digital-marketing/product-marketing-context/SKILL.md` — switching dynamics, JTBD, customer language
+- `skills/digital-marketing/marketing-psychology/SKILL.md` — mental models, persuasion frameworks
+- `skills/digital-marketing/conversion-copywriting/SKILL.md` — copy quality rules, benefits > features
+
+Framework selection is governed by the audit context — not the reverse. You do not flag "this isn't PAS" because PAS is the only framework you know. You evaluate whether the copy uses the right framework for THIS ICP at THIS awareness state.
+
+### Step 1.4 — Absorb the brand
+
+Do NOT list what you loaded. Read the entity files and **become the CMO of this brand**, then audit.
+
+**"Become" means FILTER through decisions:**
+- Read files as RAW MATERIAL (brand context, voice patterns, ICP profiles)
+- FILTER through the user's corrections and locked decisions
+- Where files conflict with decisions, DECISIONS WIN
+- Audit against APPROVED copy patterns (testimonials, landing pages that work), not against draft copy flagged for rewrite
+- Hold the asset to the CORRECTED POSITION, not the files as-written
+
+Understand:
+- How this brand talks — not tone attributes, actual voice from approved copy and locked lines
+- Who the ICP actually is — emotional state, what keeps them up, what they've tried, what they're afraid of
+- Where this brand sits competitively — what the ICP is actually comparing against and why they might choose something else
+
+**GATE — CMO Contextual Framing Checkpoint:**
+
+Present (not a file list — a strategic synthesis):
+> **How this CMO thinks:** [the strategic lens governing audit decisions for this brand]
+> **Parent brand context:** [how this entity sits within the parent ecosystem]
+> **Competitive frame:** [what the ICP is actually comparing against]
+> **Locked decisions that override files:** [list corrections/decisions that take precedence]
+
+**Ask:** "This is how I'm reading the brand. Does this CMO framing feel right?"
+
+Wait for response.
+
+### Step 1.5 — Framing
+
+Lock down ICP, problem, positioning, task, and guardrails BEFORE running the 7 checks. The audit holds the asset against this frame. Complete every field. If a field is unknown, state what's missing.
+
+**1.5.1 — ICP**
+| Field | Answer |
+|---|---|
+| Persona name(s) | Named personas from ICP files — not demographics |
+| Pain state right now | What they're feeling, fearing, frustrated by |
+| Language they use | Their words — not framework language |
+| Awareness state | Unaware / Problem-aware / Solution-aware / Product-aware / Most-aware |
+| What they've tried | Prior attempts, current approach |
+
+**1.5.2 — Problem**
+| Field | Answer |
+|---|---|
+| In their language | How THEY describe it |
+| Structural problem | The real gap they can't see yet |
+| Our diagnosis | How WE frame the problem |
+
+**1.5.3 — Positioning**
+| Field | Answer |
+|---|---|
+| Positioning statement | From positioning files — one statement |
+| Category claim | What category is this brand creating or claiming? What is it NOT? |
+| Archetype active | Brand archetype governing tone |
+
+**1.5.4 — Task**
+| Field | Answer |
+|---|---|
+| Asset type being audited | Landing page / email / ad copy / social / campaign brief / etc. |
+| Strategic job the asset claims | What shift it must produce in the ICP — that the audit is now evaluating |
+| Funnel position | Where this asset sits: traffic source → asset → exit → next step |
+
+**1.5.5 — Guardrails**
+| Category | Specifics |
+|---|---|
+| Locked lines | Verbatim lines that MUST appear |
+| Banned language | Words/patterns that must never appear |
+| Spelling | Australian/UK English |
+| Positioning guardrails | What this brand must NEVER be positioned as |
+
+**GATE — present framing for confirmation:**
+> Framing locked: ICP [name], Problem [one line], Positioning [one line], Asset [type + claimed job], Guardrails [active list]
+> Confirm?
+
+Wait for response.
+
+### Step 1.6 — Strategic analysis 3.1-3.6
+
+Complete all six points. Do not abbreviate. Do not skip. This is the strategic standard the asset is being audited against — the 7 checks evaluate whether the asset delivers it.
+
+**3.1 — ICP State:** Who is this person right now? What are they feeling, searching for, or avoiding? Use their language from 1.5.1.
+
+**3.2 — Strategic Intent (the audit's standard):** One sentence. What must the audited asset DO — not contain, but what shift it must produce. The audit asks: does the asset deliver this shift?
+
+**3.3 — KPIs:** Primary KPI the audited asset is accountable for. Secondary KPI. Specific and measurable. The audit asks: does the CTA / structure / copy map to these KPIs?
+
+**3.4 — Positioning Standard:** One statement. The positioning the audited asset must reinforce. Every section of the asset must reinforce this — the audit checks each.
+
+**3.5 — Switching Dynamics:** Map each force to the NAMED SECTION in the audited asset that should carry it, and the COPY MECHANISM expected. The audit then evaluates whether the section actually does:
+
+| Force | Section in asset | Copy mechanism expected |
+|---|---|---|
+| **Push** | [name the section] | [how it should be executed] |
+| **Pull** | [name the section] | [how it should be executed] |
+| **Habit** | [name the section] | [how it should be executed] |
+| **Anxiety** | [name the section] | [how it should be executed] |
+
+**3.6 — Funnel Architecture:** Traffic source → audited asset → primary exit → containment path → handoff to next step. What awareness level in? What level out? The audit checks coherence with adjacent funnel stages.
+
+**HARD GATE: If you have not written all 6 points, you CANNOT proceed to Phase 2.**
+
+### Step 1.7 — Context checkpoint
+
+Present a synthesis (not a file list):
+
+```
+ENTITY: [name]
+THE ICP RIGHT NOW: [2-3 sentences in their language]
+THE STANDARD THIS ASSET MUST MEET: [one sentence]
+THE RISK IF IT FAILS: [the thing most likely to make them say "not now" if the asset doesn't hold]
+```
+
+**Ask:** "This is the strategic foundation I'm auditing against. Does this framing feel right, or am I missing something?"
+
+Wait for response. Then continue.
+
+---
+
+## Phase 2 — TASK
+
+The audit task is fixed: run the 7 copy checks. No further task definition needed — proceed once context is confirmed.
+
+---
+
+## Phase 3 — SKILLS (proposed, then approved)
+
+### Step 3.1 — Propose skills
+
+Based on the framing from Phase 1 (especially the switching dynamics force-map and positioning standard), recommend which skills to load for the 7 checks. Every proposed skill traces to a Phase 1 decision — a skill without a reason produces generic findings.
+
+Default skill set for copy audit:
+- `skills/copywriting/Proofread-Anti-AI-Standard.md` — writing-standard 3-pass proof (Check 6)
+- `skills/digital-marketing/conversion-copywriting/SKILL.md` — copy quality rules (Check 7)
+- `skills/digital-marketing/product-marketing-context/SKILL.md` — switching dynamics, JTBD (Check 3)
+- `skills/digital-marketing/marketing-psychology/SKILL.md` — persuasion mental models (Checks 1, 3)
+
+Optional based on context:
+- `skills/digital-marketing/competitor-alternatives/SKILL.md` — positioning differentiation checks (Check 2)
+- Specific copywriting frameworks from `skills/copywriting/` if the asset uses a named framework (PAS, AIDA, BAB) — to evaluate whether it's the right framework for the ICP state
+
+**Ask:** "These are the skills I'd load. Add, remove, or swap?"
+
+Wait for approval. Load. Continue.
+
+---
+
+## Phase 4 — EXECUTE
+
+### Step 4.1 — Run the 7 checks
+
+Read the copy. For each check, cite specific lines or sections.
+
+| # | Check | What to look for | Verdict |
+|---|---|---|---|
+| 1 | **ICP alignment** | Does this speak to the emotional and situational state of the target ICP? Uses their language (from ICP files), not marketing language? Written for a real person, not a demographic? | PASS / FAIL |
+| 2 | **Positioning integrity** | Does the language reinforce the entity's positioning? No competitor echoes? No generic category claims? Reader knows exactly how this is different? | PASS / FAIL |
+| 3 | **Switching dynamics** | Push acknowledged before Pull offered? Anxiety addressed before CTA? Habit / inertia challenged? | PASS / FAIL |
+| 4 | **Brand voice** | On-tone per tone.md? Locked lines used correctly (not altered)? Consistent throughout? | PASS / FAIL |
+| 5 | **Funnel coherence** | Asset connects to what comes before and after? Awareness level assumptions correct? Entry/exit points clear? | PASS / FAIL |
+| 6 | **Writing standard (3-pass proof)** | Pass 1 AusE — `-ise/-our/-re/-yse/-ogue`, double-l, programme/practise/licence. Pass 2 anti-AI — em-dash misuse, stock vocab, false balance, tricolons, generic openers/closers. Pass 3 brand hygiene — emojis, sales-negative, invented frameworks. Three or more patterns in one section = full rewrite, not find-and-replace. | PASS / FAIL |
+| 7 | **Strategic coherence** | Every section serves a clear strategic intent? Nothing is filler? Tactics trace to strategy? | PASS / FAIL |
+
+### Step 4.2 — Produce the HTML findings report
+
+Open `alc-group/brand-ops/templates/CLARITY-OS-REPORT-TEMPLATE.html` and fill it with:
+
+- **Header:** `AUDIT REPORT: [asset]` | Entity: [name] | Type: Copy | Date: YYYY-MM-DD | Author: CMO
+- **Summary module:** `[X / 7 checks passed] — [PASS / NEEDS WORK / FAIL]`
+- **Findings section:** one card per FAIL, ID `F1`, `F2`, ... Each card contains:
+  - Check name
+  - What's wrong (with line / section citations)
+  - Evidence (quoted problematic text)
+  - Fix (specific — not "improve this" but exactly what to change)
+  - Severity (Critical / Major / Minor)
+  - No stamping row. The finding either stands or it does not.
+- **Verified-sound section:** one card per PASS, ID `G1`, `G2`, ... One-line confirmation each
+- **Priority Fixes module:** top 3 critical issues, ranked
+- **Archive section:** for findings that get DROPPED or DEFERRED across review rounds
+
+---
+
+## Phase 5 — QUALITY GATE
+
+### Step 5.1 — Read it as the CMO
+
+Don't run a checklist on your own report. Read it cold.
+
+- Are the findings strategic, or just mechanical "AI pattern detected"?
+- Would the fixes make this copy actually convert better, or just sound less robotic?
+- Is the priority order honest — most critical first?
+- Could Andrew make a stamping decision on every finding without re-reading the whole asset?
+
+If something fails this self-review, fix it. You're the CMO.
+
+### Step 5.2 — Deliver
+
+Save and `open` the HTML in browser so Andrew can stamp.
+
+### Step 5.3 — Offer next steps
+
+- "Run `/cmo` to produce a corrected version using these findings?"
+- "Run `/strategise` to escalate findings to a strategic-level review?"
+- "Run `/report` to document this audit session?"
+
+---
+
+
+## Visual findings — when the artefact carries a diagram, wireframe or rendered page
+
+Audit the marks as well as the argument, against `alc-group/brand-ops/templates/VISUAL-LANGUAGE.md`:
+
+| Check | It is a finding when |
+|---|---|
+| Kit values | any colour, alpha, shadow, radius or blur is not in `CLARITY-OS-TEMPLATE.html` `:root` |
+| Workflow containers | a process is drawn in lanes, bands, grid rows, summary columns or cards |
+| Node canvas misuse | the node model is used for a plain business process, or a plain process for real orchestration |
+| Wireframe headings | headings or body are set as real text rather than greyboxed |
+| Invented data | a figure, name or date the source never supplied is presented as real |
+| Wrong decision surface | a strategy or proposal carries a per-row stamp register, or an audit has no register at all |
+
+Each becomes a row in the register like any other finding.
+
+## Output format — template selection
+
+The audit's primary scaffold is mandated above: `CLARITY-OS-REPORT-TEMPLATE.html`. The full selection rule is the authority at `alc-group/brand-ops/templates/README.md`. The quick decision tree below covers when `/audit-cmo` would reach for a different template (rare — usually only when chaining into a fix in the same delivery):
+
+| You're producing | Use this template |
+|---|---|
+| Audit findings — the audit's primary output. No register. | `alc-group/brand-ops/templates/CLARITY-OS-REPORT-TEMPLATE.html` |
+| Side-by-side comparison alongside the audit (current copy vs proposed rewrite, each edit gets its own LOCK / REVISE / DROP / DEFER row) | `alc-group/brand-ops/templates/EDITS-COMPARISON-TEMPLATE.html` |
+| The corrected copy itself (delivered as a sibling artefact after the audit) | Branded entity template — `CLARITY-OS-TEMPLATE.html` (internal) / `WE-MARKETING-TEMPLATE.html` (W&E) / other per `templates/README.md` |
+| Presented audit findings **narrative** to read, present or print (not the stamping surface) | `protocols/templates/LANDSCAPE-MODULE-TEMPLATE.html` — **Landscape Module Doctrine** (1920×1080 modules → native Print → Save as PDF) |
+
+> **Landscape Module Doctrine (AUTHORITY 2026-06-10):** when the audit findings are delivered as a *presented* deliverable to read, present or print, build them as fixed 1920×1080 landscape modules off `protocols/templates/LANDSCAPE-MODULE-TEMPLATE.html`, rendered via native Print → Save as PDF. The decision-tagging stamping surface and comparison templates are interactive operator tools, not print deliverables — they stay as-is. Module schema: `protocols/landscape-module-schema.md`.
+
+**Hard rules** (all templates):
+- Never hand-write brand CSS or invent layouts. Always start from a canonical file.
+- Date-stamped: `DRAFT-AUDIT-CMO-v0.1-YYYY-MM-DD.html` → revisions increment → `APPROVED-AUDIT-CMO-YYYY-MM-DD.html`
+- Location: `projects/<entity-or-task>/tasks/YYYY-MM-DD-<slug>/`
+- HTML is canonical. No `.md` companion (per `feedback_everything_to_github_html_canonical`). Schema, references, and session notes go inline in the HTML.
+- Future sessions read APPROVED files. DRAFTs and older files are ignored.
+- AusE / no emojis / writing standard applies to every text artefact — including the audit report itself.
+
+When in doubt, read `templates/README.md` and pick from the table there.
+
+---
+
+## Chains to
+
+- `/cmo` — to produce corrected copy based on audit findings (CMO viewport, ICP/positioning/voice already loaded)
+- `/strategise` — to escalate to strategic-level analysis if audit reveals deeper positioning gaps
+- `/report` — to document the audit session
+- `/audit-cto` — if the asset has technical / structural concerns parallel to copy concerns
+
+---
+
+## What this command does NOT do
+
+- Audit code (use `/audit-cto` — they are different domains, different skills, different findings)
+- Produce new copy (use `/cmo` — this only audits existing work)
+- Full strategic re-think (use `/strategise`)
+
+---
+
+## Universal Quality Layer
+
+This command produces written output. The Core Writing Standard (`skills/copywriting/Proofread-Anti-AI-Standard.md` — source of truth at `skills/copywriting/Proofread-Anti-AI-Standard.md`) applies to the audit report itself before delivery, in addition to being one of the 7 checks applied to the audited asset.
+
+Three or more AI-tell patterns in one section of your audit report equals full rewrite, not find-and-replace.
+
+See `protocols/output-protocol.md` § Core Writing Standard for the cross-phase enforcement protocol.
+
+---
+
+## VERIFICATION — what "verified" means here
+
+Canonical text: `command-includes/_VERIFICATION-STANDARD.md`. Summarised here so this
+command is self-contained; that file is the authority if the two ever disagree.
+
+This command audits copy, so Lens 1 rarely applies and Lens 2 does most of the work.
+Verified means a person performed it and watched the result. Anything else is
+untested, and the word "untested" appears in the finding.
+
+**Judge the copy as rendered, never as source.** Where the asset is a live page, an
+email, an ad or a document, the subject is what the reader actually sees at the
+viewports and clients they use — not the markdown, not the CMS field, not the draft.
+A line that reads well in the source and is truncated, clipped, orphaned above the
+fold, or sitting at unreadable contrast has failed as copy, and citing the source text
+would have recorded it as a PASS. Capture the rendered surface and quote from it.
+
+**The journey lens applies to funnel coherence.** Check 5 asks whether the asset
+connects to what comes before and after. That is answered by walking the path a real
+reader takes — the ad to the page to the form to the confirmation — not by reasoning
+about it from the asset in isolation. Walk it as the reader, every gesture performed,
+and stop at the first step that cannot be completed.
+
+Every finding carries an evidence path; a defect nobody captured is a rumour. Captures
+are named to the check and to the viewport they were taken in, because a defect at
+1280 is not a defect at 1440, and captions state what is visibly in the frame and
+nothing else. A caption that interprets or excuses is a caption that hides.
+
+A lens is never skipped for want of a surface — it translates. Skipping one is a
+recorded decision naming which lens and why, never a silence.
+
+---
+
+## Shared blocks
+
+Declared in this command's `includes:`. Read the file when the situation arises.
+
+- `command-includes/_GATE-MECHANICS.md`
+- `command-includes/_BLOCKED-ACTION.md`
+- `command-includes/_COMMAND-CONTRACT.md` — what the block above means

@@ -1,0 +1,203 @@
+---
+name: strategise
+description: Strategic analysis pass: diagnosis, guiding policy and coherent actions.
+argument-hint: "[context or target]"
+disable-model-invocation: true
+
+contract:
+  writes: true
+  fires_when:
+    - a diagnosis, guiding policy and coherent actions are the deliverable
+  does_not_fire_when:
+    - the work is a build -> /cto or /build
+    - the question is scoping a known task -> /plan
+  loads:
+    always: []
+    skills:
+      - knowledge-bank/marketing-and-gtm.md
+      - knowledge-bank/strategy-foundations.md
+  returns:
+    - id: diagnosis
+      is: what is actually happening, distinct from what is wanted
+    - id: guiding_policy
+      is: the approach chosen and what it rules out
+    - id: actions
+      is: coherent actions that follow from the policy, not a wish list
+  acceptance:
+    - the declared always-loads appear as Read calls in the transcript
+    - every claim carries an evidence label per _VERIFICATION-STANDARD Lens 4
+  graded_by: none
+
+includes: [_GATE-MECHANICS, _BLOCKED-ACTION]
+---
+
+<!-- slash-commands/strategise.md is canonical; .claude/commands/strategise.md must match exactly | Workflow: frame-and-execute.workflow.json | Lens: Strategy -->
+# /strategise — Strategic analysis for a brand entity
+
+> **STEP 0: FILE-HOME GATE (mandatory).** Before any Write: `git fetch origin`, then confirm the target folder is canonical on GitHub with `git ls-tree -r --name-only origin/main <path>`. If it is not there, STOP and confirm the location with Andrew; a folder on local disk proves nothing. **Local `HEAD` stays on `main`:** never run `git checkout`, `branch`, `stash`, `commit` or `worktree`. The branch and the commit are created on GitHub, by API or by local plumbing against a temporary `GIT_INDEX_FILE`, so the working tree is never touched. Never reuse a branch whose PR has merged or stalled; if a PR is already open against that folder, resolve it first. Full text in `protocols/file-home-gate.md`.
+
+Produce a structured strategic analysis: ICP state, switching dynamics, positioning validation, competitive frame, funnel mapping. This is the thinking that governs all downstream work — copy, specs, campaigns.
+
+This command is SELF-CONTAINED. It is the single authority when invoked.
+
+---
+
+## MCP Tools Available
+
+Strategy is human reasoning, not MCP-driven analysis. MCPs are used only to verify facts the strategy depends on.
+
+| MCP | Where it plugs in | Use for |
+|-----|-------------------|---------|
+| **Context7** (`mcp__context7__*`) | Anywhere the analysis cites a platform behaviour, library capability, or technical constraint | Verify the cited fact is current. A positioning conclusion that depends on "Platform X supports Y" must be Context7-verified before being locked |
+| **Playwright** (`mcp__playwright__*`) | Competitive frame, funnel mapping when the analysis depends on live competitor surface state | Snapshot the actual page being analysed rather than relying on memory or assumed state |
+
+**Rule:** strategy is reasoning, not retrieval. Use MCPs to verify, never to substitute for thinking. If you find yourself asking an MCP "what is the strategy here", you have drifted — go back to the strategic frame.
+
+---
+
+## Procedure
+
+### Step 1 — Establish scope
+
+Ask (if not already clear):
+1. **What entity** is this for?
+2. **What's the strategic question?**
+3. **Which ICP(s)** are in scope?
+4. **Any constraints?**
+5. **Company brand work or client project work?**
+
+**GATE — present for confirmation:**
+> Entity: [name] | Type: [brand/client] | Question: [one line] | ICPs: [list]
+> Correct?
+
+Wait for response.
+
+**After confirmation — route by type:**
+- **Company brand work** → Read `protocols/cmo-our-brands.md` for persona lookup table and locked positioning statements.
+- **Client project work** → Skip CMO-OUR-BRANDS. Load client context from `client-projects/`.
+
+### Step 2 — Load and align entity context
+
+Read `protocols/entity-repo-map.md` → load ALL files for the entity. Assess currency — APPROVED files take precedence over DRAFTs. Flag superseded files, do not absorb.
+
+If critical files are missing (ICP, positioning), **stop and flag**.
+
+**GATE — present for confirmation:**
+> Loaded [N]/[total] files. Current: [list]. Superseded: [list or "none"]. Gaps: [list or "none"]. Confirm?
+
+Wait for response.
+
+### Step 3 — Load strategic lenses
+
+Read these BEFORE analysis. They are HOW YOU THINK:
+- `knowledge-bank/strategy-foundations.md` — competitive positioning, category design
+- `knowledge-bank/marketing-and-gtm.md` — GTM architecture, positioning
+- `skills/digital-marketing/product-marketing-context/SKILL.md` — switching dynamics, JTBD
+- `skills/digital-marketing/competitor-alternatives/SKILL.md` — competitive framing
+- `skills/copywriting/Proofread-Anti-AI-Standard.md` — applies to the strategy doc you produce
+
+### Step 4 — Strategic analysis (complete all 6 points)
+
+Write each answer out. Do not abbreviate. Do not skip.
+
+**4.1 — ICP State Analysis**
+For each ICP in scope:
+- What are they feeling right now? (emotional state, not demographics)
+- What situation are they in? (the trigger that makes them look)
+- What language do they use to describe their problem? (from ICP files, not your words)
+- What have they already tried? What failed?
+- What do they believe is true that may be wrong?
+
+**4.2 — Switching Dynamics**
+For each ICP in scope, map all four forces:
+- **Push:** What is driving them away from their current situation? Be specific — not "frustration" but "spending 3 hours a week on reports that nobody reads"
+- **Pull:** What is attracting them toward this offer? What's the magnet?
+- **Habit:** What inertia keeps them where they are? What default behaviour works against change?
+- **Anxiety:** What specific fear or doubt could kill the decision? What's the "yeah but..."?
+
+For each force: name the section of any downstream asset where it should be addressed.
+
+**4.3 — Positioning Validation**
+- State the current positioning (from positioning.md)
+- Test it: Does it clearly differentiate from what the ICP is actually comparing against?
+- Identify any positioning gaps: where the claim is strong but the evidence is weak
+- Identify any positioning drift: where the brand is saying one thing but doing another
+
+**4.4 — Competitive Frame**
+- Who is the ICP actually comparing this to? (not who you think the competitors are — who the ICP considers alternatives)
+- What does each alternative offer that this brand doesn't?
+- What does this brand offer that no alternative does?
+- Where is the brand vulnerable? Where is it strongest?
+
+**4.5 — Funnel Mapping**
+- Current funnel: traffic sources → landing experiences → conversion points → retention
+- For each stage: what awareness level does the ICP have? What must shift?
+- Where are the leaks? Where is the funnel strong?
+- What's the next asset needed to fill the biggest gap?
+
+**4.6 — Strategic Recommendations**
+Based on 4.1-4.5:
+- What is the single most important strategic move?
+- What should be done first? (sequence matters)
+- What should explicitly NOT be done yet? (scope boundary)
+- What data or context is missing that would change these recommendations?
+
+### Step 5 — Output the analysis
+
+Present as a structured document with clear headers for each section (4.1-4.6). Include specific evidence from entity files — quote ICP language, cite positioning statements, reference knowledge passes.
+
+### Step 6 — Self-check before delivering
+
+| Check | Pass condition |
+|-------|---------------|
+| **Grounded in evidence** | Every claim traces to a specific entity file. No fabricated context. |
+| **ICP language, not marketing language** | Descriptions use words from the ICP files, not polished abstractions |
+| **Actionable** | Recommendations specify what to do, in what order, with what outcome |
+| **Honest about gaps** | Missing data is flagged, not papered over |
+
+---
+
+## Output location
+
+Save as `DRAFT-STRATEGY-v0.1-YYYY-MM-DD.html`. A strategy is **read and approved as a piece, not stamped line by line** — do not use the decision-tagging scaffold. One whole-document sign-off at the end, plus per-section Yes / Revise and a notes field. Never LOCK / REVISE / DROP / DEFER.
+
+**Before drawing anything, read `alc-group/brand-ops/templates/VISUAL-LANGUAGE.md`.** It is the authority on the marks that go on the page: every value comes from the kit and nothing is invented; workflows are glyph-led with no containers; wireframe headings are bars while tags, eyebrows, CTAs and field labels carry real words; anything the client has not supplied is a bracketed placeholder, never invented filler. ID convention: `D` decisions · `R` risks · `Q` open questions · `S` scope boundaries.
+
+Location: `projects/<entity-or-task>/tasks/YYYY-MM-DD-<slug>/`. When approved: `APPROVED-YYYY-MM-DD.html`. HTML is canonical, no `.md` companion (per `feedback_everything_to_github_html_canonical`).
+
+---
+
+## Chains to
+
+- `/cmo` — to produce copy governed by this strategic analysis
+- `/spec` — to produce a technical spec informed by this strategy
+- `/plan` — to scope a project based on strategic recommendations
+- `/review CMO` — for full-depth CMO viewport analysis on top of this
+
+---
+
+## What this command does NOT do
+
+- Produce copy or creative output (use `/cmo`)
+- Build software (use `/spec` → `/build`)
+- Audit existing copy (use `/audit-cmo`)
+- Audit existing code (use `/audit-cto`)
+---
+
+## Core Writing Standard
+
+This command produces written output. Before any draft is presented, written to disk, or marked APPROVED, apply the Core Writing Standard: `skills/copywriting/Proofread-Anti-AI-Standard.md` (canonical rule source: `skills/copywriting/Proofread-Anti-AI-Standard.md`).
+
+Pass 1 AusE spelling. Pass 2 anti-AI tells. Pass 3 brand hygiene. Three or more AI-tell patterns in one section equals full rewrite, not find-and-replace.
+
+See `protocols/output-protocol.md` § Core Writing Standard for the cross-phase enforcement protocol.
+
+---
+
+## Shared blocks
+
+Declared in this command's `includes:`. Read the file when the situation arises.
+
+- `command-includes/_GATE-MECHANICS.md`
+- `command-includes/_BLOCKED-ACTION.md`
+- `command-includes/_COMMAND-CONTRACT.md` — what the block above means
