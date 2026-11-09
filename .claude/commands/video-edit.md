@@ -14,8 +14,10 @@ contract:
     - the ask is a video from scratch with generated footage -> the pletor or higgsfield routes
   loads:
     always:
-      - alc-group andrew-cockburn/content/video-edit-sop/ (latest DRAFT or APPROVED): How to run, Work order, Pauses and cuts, Verify and Scripts tabs
-      - Corhelix/hyperframes corhelix/video-edit/README.md
+      - Corhelix/video-edit:sop/DRAFT-VIDEO-EDIT-SOP-v0.8-2026-11-07.html@main # How to run, Work order, Pauses and cuts, Verify and Scripts tabs; use the latest DRAFT or APPROVED file in sop/ and update this line when it changes
+      - Corhelix/video-edit:README.md@main # entry: where every piece is
+      - Corhelix/video-edit:PINS.md@main
+      - Corhelix/video-edit:spec/PRE-RENDER-CHECK-SPEC-v0.1.md@main
       - command-includes/_VERIFICATION-STANDARD.md
     conditional:
       - when: a callout is not a Hyperframes template
@@ -32,6 +34,7 @@ contract:
     - script_lock.py passes on the final EDL, and every authorisation quotes words Andrew typed
     - a contact sheet exists for every join and was read before the first render
     - every non-template HTML callout has a recorded 21st.dev lookup in design_ref
+    - before any layered render the pre-render pack passes precheck.py gate: scene sheet, micro-renders, no mechanical FAIL, two cold reviews by reviewers who did not build the layers, plan hash current
     - nothing is called approved; frame checks are not a watch-through (V9 is a person)
   graded_by: cmo-verify
 
@@ -42,10 +45,10 @@ includes: [_GATE-MECHANICS, _BLOCKED-ACTION]
 
 # /video-edit
 
-The method is the Video Edit SOP. The scripts are in `Corhelix/hyperframes` `corhelix/video-edit/current/`. The gates are the `video-edit-*` hooks (`global/hooks/README-video-edit-gates.md`), which run whether or not this file is remembered. If a gate holds a step, clear what it names. Do not work around it.
+The method is the Video Edit SOP. The home is `Corhelix/video-edit` (private): the SOP in `sop/`, the scripts in `current/`, the readiness check in `doctor/doctor.py`. The gates are the `video-edit-*` hooks (`global/hooks/README-video-edit-gates.md`), which run whether or not this file is remembered. If a gate holds a step, clear what it names. Do not work around it.
 
 ## Phase 0: Load
-Read the SOP tabs and the tool README listed under `loads`. Check the machine (`ffmpeg`, `ffprobe`, `~/Documents/video-use`, `uv`). Media stays in `~/Movies/<date>-<slug>/` and is never committed. Documents go to GitHub through the API.
+Read the SOP tabs and the home README listed under `loads`. Run `python doctor/doctor.py` from a clone of `Corhelix/video-edit`; do not start until it says GO. It checks the machine (`ffmpeg`, `ffprobe`, `~/Documents/video-use`, `uv`), the pins and the gates. Media stays in `~/Movies/<date>-<slug>/` and is never committed. Documents go to GitHub through the API.
 
 ## Phase 1: Work order
 Fill in the SOP Work order for this recording (format, look, subtitles, XML, screen mix, extra sources) and confirm it with Andrew before anything is cut. Stage 01: confirm the file by its time and first minute. Write `brief.json` and `FILES.md`.
@@ -64,6 +67,9 @@ Run `gap_sheets.py` for every join before any render. Read each sheet by eye and
 
 ## Phase 5: Render, audio, layers
 Render the cut, then audio, then beats and the layer plan, from this recording's transcript only. For HTML callouts use a Hyperframes template. If none fits, run `twentyfirst_lookup.py search` (or `video-blocks`) from the project folder, pick a result, `get` its code to port, then run `twentyfirst_lookup.py record --layer-id <id> --slug <slug>` to write `design_ref` onto the layer row. The helper takes the key from the secrets vault and never prints it, and `record` accepts only a slug or id that a logged lookup returned. Do not use 21st's `generate`: it spends AI credits.
+
+## Phase 5b: Pre-render check
+Before any layered render (compose, 9:16, XML export, Hyperframes render), build `verify/precheck/pack.json` and run `precheck.py init`, `scenes`, `mech` from the home repo's `current/`. Make a 1 to 2 second micro-render of every treatment that moves. Two reviewers who did not build the layers fill `review-A.md` and `review-B.md` from the stills only (blind read first, then the spoken words). Nothing the builder wrote for itself (chapter names, step numbers, progress bars, layer ids, strategy notes) goes on screen, a supplied image is shown whole, and no sliding tickers. `precheck.py gate` must say GO. Any change to a layer afterwards voids the review for that layer.
 
 ## Phase 6: Verify
 Run V1 to V9. Say what was checked. Frame checks are not a watch-through; V9 is a person watching the whole video at 1x.
